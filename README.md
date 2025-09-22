@@ -1,3 +1,15 @@
+# NW Missouri State University CSIS 44671 Module 5
+
+Date: 2025-09-21
+Author: Aaron Gillespie
+GitHub: https://github.com/aarongilly
+
+## About 
+
+Below this horizontal rule is the original README from the assignment, most of which is still relevant.
+
+---
+
 # buzzline-05-case
 
 Nearly every streaming analytics system stores processed data somewhere for further analysis, historical reference, or integration with BI tools.
