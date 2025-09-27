@@ -6,13 +6,10 @@ Insert the processed messages into a database.
 
 Example JSON message
 {
-    "message": "I just shared a meme! It was amazing.",
-    "author": "Charlie",
     "timestamp": "2025-01-29 14:35:20",
-    "category": "humor",
-    "sentiment": 0.87,
-    "keyword_mentioned": "meme",
-    "message_length": 42
+    "heart_rate": 69,
+    "steps": 20,
+    "activity": "walking"
 }
 
 Database functions are in consumers/db_sqlite_case.py.
@@ -40,7 +37,7 @@ from utils.utils_producer import verify_services #, is_topic_available
 
 # Ensure the parent directory is in sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from consumers.sqlite_consumer_case import init_db, insert_message
+from consumers.duckdb_consumer_gillespie import init_db, insert_message
 
 #####################################
 # Function to process a single message
@@ -59,13 +56,10 @@ def process_message(message: dict) -> None:
     logger.info(f"   {message=}")
     try:
         processed_message = {
-            "message": message.get("message"),
-            "author": message.get("author"),
             "timestamp": message.get("timestamp"),
-            "category": message.get("category"),
-            "sentiment": float(message.get("sentiment", 0.0)),
-            "keyword_mentioned": message.get("keyword_mentioned"),
-            "message_length": int(message.get("message_length", 0)),
+            "activity": message.get("activity"),
+            "steps": int(message.get("steps", 0)),
+            "heart_rate": float(message.get("heart_rate", 0.0)),
         }
         logger.info(f"Processed message: {processed_message}")
         return processed_message
@@ -174,16 +168,16 @@ def main():
         kafka_url = config.get_kafka_broker_address()
         group_id = config.get_kafka_consumer_group_id()
         interval_secs: int = config.get_message_interval_seconds_as_int()
-        sqlite_path: pathlib.Path = config.get_sqlite_path()
+        duckdb_path: pathlib.Path = config.get_duckdb_path()
         logger.info("SUCCESS: Read environment variables.")
     except Exception as e:
         logger.error(f"ERROR: Failed to read environment variables: {e}")
         sys.exit(1)
 
     logger.info("STEP 2. Delete any prior database file for a fresh start.")
-    if sqlite_path.exists():
+    if duckdb_path.exists():
         try:
-            sqlite_path.unlink()
+            duckdb_path.unlink()
             logger.info("SUCCESS: Deleted database file.")
         except Exception as e:
             logger.error(f"ERROR: Failed to delete DB file: {e}")
@@ -191,7 +185,7 @@ def main():
 
     logger.info("STEP 3. Initialize a new database with an empty table.")
     try:
-        init_db(sqlite_path)
+        init_db(duckdb_path)
     except Exception as e:
         logger.error(f"ERROR: Failed to create db table: {e}")
         sys.exit(3)
@@ -199,7 +193,7 @@ def main():
     logger.info("STEP 4. Begin consuming and storing messages.")
     try:
         consume_messages_from_kafka(
-            topic, kafka_url, group_id, sqlite_path, interval_secs
+            topic, kafka_url, group_id, duckdb_path, interval_secs
         )
     except KeyboardInterrupt:
         logger.warning("Consumer interrupted by user.")

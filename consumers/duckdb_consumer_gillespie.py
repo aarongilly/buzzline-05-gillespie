@@ -47,10 +47,14 @@ def init_db(db_path: pathlib.Path) -> None:
 
         # For a fresh start, drop then create
         con.execute("DROP TABLE IF EXISTS streamed_messages;")
+
+        # This line of code took me a long time to figure out was needed.
+        con.execute("CREATE SEQUENCE IF NOT EXISTS streamed_messages_seq START 1;")
+
         con.execute(
             """
             CREATE TABLE streamed_messages (
-                id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, -- auto-increment
+                id INTEGER PRIMARY KEY DEFAULT nextval('streamed_messages_seq'), 
                 timestamp TEXT,
                 activity TEXT,
                 steps INTEGER,
@@ -68,22 +72,12 @@ def init_db(db_path: pathlib.Path) -> None:
 # Insert One Message
 #####################################
 
-
 def insert_message(message: dict, db_path: pathlib.Path) -> None:
-    """
-    Insert a single processed message into DuckDB.
-
-    Args:
-        message: dict with keys matching table columns
-        db_path: Path to the DuckDB file
-    """
-    logger.info("Calling DuckDB insert_message() with:")
-    logger.info(f"{message=}")
-    logger.info(f"{db_path=}")
-
     try:
         con: duckdb.DuckDBPyConnection = duckdb.connect(str(db_path))
-        con.execute(
+        cur = con.cursor() 
+
+        cur.execute(
             """
             INSERT INTO streamed_messages
                 (timestamp, activity, steps, heart_rate)
@@ -96,6 +90,8 @@ def insert_message(message: dict, db_path: pathlib.Path) -> None:
                 float(message["heart_rate"]),
             ],
         )
+        
+        con.commit() 
         logger.info("Inserted one message into DuckDB.")
         con.close()
     except Exception as e:
@@ -180,7 +176,6 @@ def main() -> None:
             """
             SELECT id, activity, heart_rate
             FROM streamed_messages
-            ORDER BY id DESC
             LIMIT 1;
             """,
             [test_message["activity"], test_message["heart_rate"]],
