@@ -89,6 +89,19 @@ def get_sqlite_path() -> pathlib.Path:
     logger.info(f"SQLITE_PATH: {sqlite_path}")
     return sqlite_path
 
+#####################################
+# Added by me for additional DB support
+#####################################
+
+def get_duckdb_path() -> pathlib.Path:
+    """Fetch DUCKDB_DB_FILE_NAME from environment or use default."""
+    duckdb_path = get_base_data_path() / os.getenv("DUCKDB_DB_FILE_NAME", "buzz.duckdb")
+    logger.info(f"DUCKDB_PATH: {duckdb_path}")
+    return duckdb_path
+
+#####################################
+# End my additions
+#####################################
 
 def get_database_type() -> str:
     """Fetch DATABASE_TYPE from environment or use default."""
