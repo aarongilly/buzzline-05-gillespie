@@ -14,3 +14,7 @@ __pycache__/
 
 # Environment variables file (which could contain sensitive information)
 .env
+
+# Logs and produced data files
+data/
+logs/
