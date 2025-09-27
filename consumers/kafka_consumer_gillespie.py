@@ -39,6 +39,9 @@ from utils.utils_producer import verify_services #, is_topic_available
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from consumers.duckdb_consumer_gillespie import init_db, insert_message
 
+# Threshold for elevated heart rate
+HIGH_HEART_RATE_THRESHOLD = 100.0
+
 #####################################
 # Function to process a single message
 # #####################################
@@ -48,6 +51,9 @@ def process_message(message: dict) -> None:
     """
     Process and transform a single JSON message.
     Converts message fields to appropriate data types.
+
+    Added logic to filter down to cases of elevated heart rate
+    and report out only those with high heart rate.
 
     Args:
         message (dict): The JSON message as a Python dictionary.
@@ -61,6 +67,10 @@ def process_message(message: dict) -> None:
             "steps": int(message.get("steps", 0)),
             "heart_rate": float(message.get("heart_rate", 0.0)),
         }
+        # Filter for elevated heart rate
+        if processed_message["heart_rate"] < HIGH_HEART_RATE_THRESHOLD:
+            logger.info("Heart rate not elevated; skipping message.")
+            return None
         logger.info(f"Processed message: {processed_message}")
         return processed_message
     except Exception as e:
