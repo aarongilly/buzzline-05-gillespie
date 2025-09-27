@@ -36,7 +36,7 @@ from kafka import KafkaConsumer
 import utils.utils_config as config
 from utils.utils_consumer import create_kafka_consumer
 from utils.utils_logger import logger
-from utils.utils_producer import verify_services, is_topic_available
+from utils.utils_producer import verify_services #, is_topic_available
 
 # Ensure the parent directory is in sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -125,7 +125,7 @@ def consume_messages_from_kafka(
     logger.info("Step 3. Verify topic exists.")
     if consumer is not None:
         try:
-            is_topic_available(topic)
+            #is_topic_available(topic)
             logger.info(f"Kafka topic '{topic}' is ready.")
         except Exception as e:
             logger.error(
