@@ -44,7 +44,7 @@ from utils.utils_producer import verify_services, create_kafka_topic
 from utils.utils_logger import logger
 
 # optional local emitters (single-responsibility helpers)
-from utils.emitters import file_emitter, kafka_emitter, sqlite_emitter, duckdb_emitter
+from utils.emitters import file_emitter, kafka_emitter, sqlite_emitter, duckdb_emitter, sqlite_emitter_biometrics
 
 
 #####################################
@@ -94,6 +94,10 @@ def emit_to_kafka(
 def emit_to_sqlite(message: Mapping[str, Any], *, db_path: pathlib.Path) -> bool:
     """Insert one message into SQLite."""
     return sqlite_emitter.emit_message(message, db_path=db_path)
+
+def emit_to_sqlite_biometrics(message: Mapping[str, Any], *, db_path: pathlib.Path) -> bool:
+    """Insert one message into SQLite."""
+    return sqlite_emitter_biometrics.emit_message(message, db_path=db_path)
 
 
 def emit_to_duckdb(message: Mapping[str, Any], *, db_path: pathlib.Path) -> bool:
@@ -170,7 +174,7 @@ def main() -> None:
 
             # --- SQLite ---
             # Uncomment to enable SQLite sink:
-            # emit_to_sqlite(message, db_path=sqlite_path)
+            emit_to_sqlite_biometrics(message, db_path=sqlite_path)
 
             # --- DuckDB ---
             # Uncomment to enable DuckDB sink:
