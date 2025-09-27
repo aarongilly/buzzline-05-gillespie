@@ -6,6 +6,53 @@ GitHub: https://github.com/aarongilly
 
 ## About 
 
+This code base demos a simple pipeline, built in a modular way. Messages are generated forever, then sent to one of 6 (originally 4) emitters. These emitters can then be watched by consumers, which can then take some action on the data. 
+
+My modification to the sample code was to change the type of data that was being generated, enable DuckDB, and to add generated biometric data to a DuckDB database **only if** the `heart_rate` was high. My idea is that this would be useful in filtering out huge swaths of the day where the person would be mostly idle, we could see the activities and associated steps taken when their heart rate was above some threshold. 
+
+### Mermaid Diagram 
+
+I believe GitHub supports Mermaid now? If so, here's what we're doing:
+
+```mermaid
+graph LR
+    subgraph Producer
+        A[Message Generated] --> B(Emitted to Kafka Topic)
+    end
+
+    B --> C;
+
+    subgraph Consumer
+        C[Consumed from Kafka] --> D[Filter / Processed]
+        D --> E[Stored in DuckDB]
+    end
+```
+
+### Running My Producer & Consumer
+
+1. start kafka
+
+```bash
+chmod +x scripts/prepare_kafka.sh
+scripts/prepare_kafka.sh
+cd ~/kafka
+bin/kafka-server-start.sh config/kraft/server.properties
+```
+
+2. start the producer
+
+```zsh
+source .venv/bin/activate
+python3 -m producers.producer_gillespie
+```
+
+3. start the consumer
+
+```zsh
+source .venv/bin/activate
+python3 -m consumers.consumer_gillespie
+```
+
 Below this horizontal rule is the original README from the assignment, most of which is still relevant.
 
 ---
