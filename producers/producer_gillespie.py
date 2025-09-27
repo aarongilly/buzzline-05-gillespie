@@ -44,7 +44,7 @@ from utils.utils_producer import verify_services, create_kafka_topic
 from utils.utils_logger import logger
 
 # optional local emitters (single-responsibility helpers)
-from utils.emitters import file_emitter, kafka_emitter, sqlite_emitter, duckdb_emitter, sqlite_emitter_biometrics
+from utils.emitters import file_emitter, kafka_emitter, sqlite_emitter, duckdb_emitter, sqlite_emitter_biometrics, duckdb_emitter_biometrics
 
 
 #####################################
@@ -103,6 +103,10 @@ def emit_to_sqlite_biometrics(message: Mapping[str, Any], *, db_path: pathlib.Pa
 def emit_to_duckdb(message: Mapping[str, Any], *, db_path: pathlib.Path) -> bool:
     """Insert one message into DuckDB."""
     return duckdb_emitter.emit_message(message, db_path=db_path)
+
+def emit_to_duckdb_biometrics(message: Mapping[str, Any], *, db_path: pathlib.Path) -> bool:
+    """Insert one message into DuckDB."""
+    return duckdb_emitter_biometrics.emit_message(message, db_path=db_path)
 
 
 #####################################
@@ -178,7 +182,7 @@ def main() -> None:
 
             # --- DuckDB ---
             # Uncomment to enable DuckDB sink:
-            # emit_to_duckdb(message, db_path=duckdb_path)
+            emit_to_duckdb_biometrics(message, db_path=duckdb_path)
 
             time.sleep(interval_secs)
 
